@@ -71,6 +71,25 @@ ROCm 6.x works pretty well for most RL workloads. The 24GB VRAM is great for lar
 └── checkpoints/               # Saved models (gitignored)
 ```
 
+## Why AMD / ROCm
+
+Reinforcement learning is compute-hungry — every training loop burns through millions of environment steps, and the policy/value network updates are pure matrix math that screams on GPUs. The problem? Most RL codebases assume CUDA, and NVIDIA's pricing makes high-VRAM cards inaccessible to independent researchers.
+
+AMD GPUs via ROCm change the equation:
+
+- **Parallel environment simulation:** The RX 7900 XTX's 24GB VRAM lets us run 16+ vectorized environments with large observation spaces, keeping the GPU fed during policy updates while env stepping runs on CPU. This hybrid CPU/GPU pipeline is the sweet spot for RL.
+- **Cost-effective training:** A $900 RX 7900 XTX delivers competitive throughput to a $1,600+ RTX 4090 for the matrix operations that dominate RL training.
+- **Mixed precision:** fp16/bf16 training on ROCm gives 1.5-2x speedup on policy updates, letting us iterate faster on hyperparameters.
+- **Open ecosystem:** ROCm + PyTorch means no vendor lock-in. The same code runs on AMD, and we can contribute fixes upstream.
+
+## AMD GPU Credit Use Plan
+
+1. **Validate on ROCm GPUs** — Run PPO and SAC training end-to-end on AMD hardware, verify convergence matches CPU baseline
+2. **Compare CPU vs GPU latency** — Benchmark policy update time, rollout throughput, and end-to-end training time
+3. **Test fp16/bf16** — Profile mixed precision stability in PPO (GAE computation) and SAC (Q-value estimation)
+4. **Document ROCm issues** — Track `torch.compile` behavior, memory management quirks, and any operator-level failures
+5. **Publish benchmarks** — Open results comparing RX 7900 XTX vs CPU baseline, with configs for reproducibility
+
 ## License
 
 MIT — do whatever you want with it.

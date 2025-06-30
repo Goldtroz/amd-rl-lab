@@ -1,0 +1,45 @@
+# PPO Atari Training Configuration
+# Example config for training PPO on Breakout with ROCm GPU acceleration
+
+algorithm: ppo
+environment:
+  name: "BreakoutNoFrameskip-v4"
+  num_envs: 16              # parallel envs to saturate GPU during updates
+  frame_stack: 4
+  episode_life: true
+  clip_rewards: true
+
+policy:
+  type: "cnn"               # CNN feature extractor for Atari frames
+  channels: [32, 64, 64]
+  kernel_sizes: [8, 4, 3]
+  strides: [4, 2, 1]
+  hidden_dim: 512
+
+training:
+  total_steps: 10_000_000
+  rollout_steps: 2048       # steps per rollout before GPU update
+  minibatch_size: 256
+  epochs_per_update: 3
+  learning_rate: 2.5e-4
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_epsilon: 0.1
+  value_loss_coef: 0.5
+  entropy_coef: 0.01
+  max_grad_norm: 0.5
+
+mixed_precision:
+  enabled: true
+  dtype: "fp16"             # use fp16 on ROCm — bf16 causes GAE NaN issues
+
+logging:
+  tensorboard: true
+  log_interval: 10          # log every 10 rollouts
+  eval_interval: 50         # eval every 50 rollouts
+  checkpoint_interval: 100  # save every 100 rollouts
+  log_dir: "./experiments/ppo_breakout/"
+
+hardware:
+  device: "cuda"            # ROCm shows as "cuda" in PyTorch
+  compile: false            # torch.compile unstable with dynamic episode lengths
