@@ -9,7 +9,6 @@
 
 ## Current Blockers
 
-- No access to ROCm hardware for automated CI testing — all validation is manual on local RX 7900 XTX
 - `torch.compile()` still unstable for RL training loops with dynamic control flow (episode boundaries cause recompilation)
 - Mixed precision autocast needs careful handling in PPO advantage estimation — bf16 causes subtle NaN issues in GAE computation
 
